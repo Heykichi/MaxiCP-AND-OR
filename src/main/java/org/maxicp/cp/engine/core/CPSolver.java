@@ -83,5 +83,6 @@ public interface CPSolver extends StateManaged {
      * Gives the ModelProxy associated with this CPSolver, if any
      */
     ModelProxy getModelProxy();
+
 }
 

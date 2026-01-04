@@ -1,0 +1,64 @@
+<instance format="XCSP3" type="CSP">
+  <variables>
+    <array id="x" note="x[i][j] is the value put in cell of the matrix at coordinates (i,j)" size="[4][4]"> 1..16 </array>
+    <array id="y" note="y[k] is the sum of values in the kth line (row, column or diagonal)" size="[10]"> 10..136 </array>
+    <array id="z" size="[10]"> 0..9 </array>
+    <array id="aux_gb" note="aux_gb[i] is the ith auxiliary variable having been automatically introduced" size="[10]"> 10..136 </array>
+  </variables>
+  <constraints>
+    <allDifferent note="all values must be different"> x[][] </allDifferent>
+    <group note="computing sums">
+      <sum>
+        <list> %... </list>
+        <condition> (eq,%0) </condition>
+      </sum>
+      <args> y[0] x[0][] </args>
+      <args> y[1] x[1][] </args>
+      <args> y[2] x[2][] </args>
+      <args> y[3] x[3][] </args>
+      <args> y[4] x[][0] </args>
+      <args> y[5] x[][1] </args>
+      <args> y[6] x[][2] </args>
+      <args> y[7] x[][3] </args>
+      <args> y[8] x[0][0] x[1][1] x[2][2] x[3][3] </args>
+      <args> y[9] x[3][0] x[2][1] x[1][2] x[0][3] </args>
+    </group>
+    <allDifferent> y[] </allDifferent>
+    <group>
+      <intension> eq(add(%0,1),%1) </intension>
+      <args> aux_gb[0] aux_gb[1] </args>
+      <args> aux_gb[1] aux_gb[2] </args>
+      <args> aux_gb[2] aux_gb[3] </args>
+      <args> aux_gb[3] aux_gb[4] </args>
+      <args> aux_gb[4] aux_gb[5] </args>
+      <args> aux_gb[5] aux_gb[6] </args>
+      <args> aux_gb[6] aux_gb[7] </args>
+      <args> aux_gb[7] aux_gb[8] </args>
+      <args> aux_gb[8] aux_gb[9] </args>
+    </group>
+    <group class="symmetry-breaking" note="ensuring Frenicle standard form">
+      <intension> lt(%0,%1) </intension>
+      <args> x[0][0] x[0][3] </args>
+      <args> x[0][0] x[3][0] </args>
+      <args> x[0][0] x[3][3] </args>
+      <args> x[0][1] x[1][0] </args>
+    </group>
+    <group>
+      <element>
+        <list> y[] </list>
+        <index> %0 </index>
+        <value> %1 </value>
+      </element>
+      <args> z[0] aux_gb[0] </args>
+      <args> z[1] aux_gb[1] </args>
+      <args> z[2] aux_gb[2] </args>
+      <args> z[3] aux_gb[3] </args>
+      <args> z[4] aux_gb[4] </args>
+      <args> z[5] aux_gb[5] </args>
+      <args> z[6] aux_gb[6] </args>
+      <args> z[7] aux_gb[7] </args>
+      <args> z[8] aux_gb[8] </args>
+      <args> z[9] aux_gb[9] </args>
+    </group>
+  </constraints>
+</instance>

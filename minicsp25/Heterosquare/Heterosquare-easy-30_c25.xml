@@ -1,0 +1,99 @@
+<instance format="XCSP3" type="CSP">
+  <variables>
+    <array id="x" note="x[i][j] is the value put in cell of the matrix at coordinates (i,j)" size="[30][30]"> 1..900 </array>
+    <array id="rs" note="rs[i] is the sum of values in the ith row" size="[30]"> 6975..27030 </array>
+    <array id="cs" note="cs[j] is the sum of values in the jth column" size="[30]"> 6975..27030 </array>
+    <array id="ds" note="ds is the sum in the two diagonals" size="[2]"> 6975..27030 </array>
+  </variables>
+  <constraints>
+    <allDifferent note="all values must be different"> x[][] </allDifferent>
+    <group note="computing row sums">
+      <sum>
+        <list> %... </list>
+        <condition> (eq,%0) </condition>
+      </sum>
+      <args> rs[0] x[0][] </args>
+      <args> rs[1] x[1][] </args>
+      <args> rs[2] x[2][] </args>
+      <args> rs[3] x[3][] </args>
+      <args> rs[4] x[4][] </args>
+      <args> rs[5] x[5][] </args>
+      <args> rs[6] x[6][] </args>
+      <args> rs[7] x[7][] </args>
+      <args> rs[8] x[8][] </args>
+      <args> rs[9] x[9][] </args>
+      <args> rs[10] x[10][] </args>
+      <args> rs[11] x[11][] </args>
+      <args> rs[12] x[12][] </args>
+      <args> rs[13] x[13][] </args>
+      <args> rs[14] x[14][] </args>
+      <args> rs[15] x[15][] </args>
+      <args> rs[16] x[16][] </args>
+      <args> rs[17] x[17][] </args>
+      <args> rs[18] x[18][] </args>
+      <args> rs[19] x[19][] </args>
+      <args> rs[20] x[20][] </args>
+      <args> rs[21] x[21][] </args>
+      <args> rs[22] x[22][] </args>
+      <args> rs[23] x[23][] </args>
+      <args> rs[24] x[24][] </args>
+      <args> rs[25] x[25][] </args>
+      <args> rs[26] x[26][] </args>
+      <args> rs[27] x[27][] </args>
+      <args> rs[28] x[28][] </args>
+      <args> rs[29] x[29][] </args>
+    </group>
+    <group note="computing column sums">
+      <sum>
+        <list> %... </list>
+        <condition> (eq,%0) </condition>
+      </sum>
+      <args> cs[0] x[][0] </args>
+      <args> cs[1] x[][1] </args>
+      <args> cs[2] x[][2] </args>
+      <args> cs[3] x[][3] </args>
+      <args> cs[4] x[][4] </args>
+      <args> cs[5] x[][5] </args>
+      <args> cs[6] x[][6] </args>
+      <args> cs[7] x[][7] </args>
+      <args> cs[8] x[][8] </args>
+      <args> cs[9] x[][9] </args>
+      <args> cs[10] x[][10] </args>
+      <args> cs[11] x[][11] </args>
+      <args> cs[12] x[][12] </args>
+      <args> cs[13] x[][13] </args>
+      <args> cs[14] x[][14] </args>
+      <args> cs[15] x[][15] </args>
+      <args> cs[16] x[][16] </args>
+      <args> cs[17] x[][17] </args>
+      <args> cs[18] x[][18] </args>
+      <args> cs[19] x[][19] </args>
+      <args> cs[20] x[][20] </args>
+      <args> cs[21] x[][21] </args>
+      <args> cs[22] x[][22] </args>
+      <args> cs[23] x[][23] </args>
+      <args> cs[24] x[][24] </args>
+      <args> cs[25] x[][25] </args>
+      <args> cs[26] x[][26] </args>
+      <args> cs[27] x[][27] </args>
+      <args> cs[28] x[][28] </args>
+      <args> cs[29] x[][29] </args>
+    </group>
+    <group note="computing diagonal sums">
+      <sum>
+        <list> %... </list>
+        <condition> (eq,%0) </condition>
+      </sum>
+      <args> ds[0] x[0][0] x[1][1] x[2][2] x[3][3] x[4][4] x[5][5] x[6][6] x[7][7] x[8][8] x[9][9] x[10][10] x[11][11] x[12][12] x[13][13] x[14][14] x[15][15] x[16][16] x[17][17] x[18][18] x[19][19] x[20][20] x[21][21] x[22][22] x[23][23] x[24][24] x[25][25] x[26][26] x[27][27] x[28][28] x[29][29] </args>
+      <args> ds[1] x[29][0] x[28][1] x[27][2] x[26][3] x[25][4] x[24][5] x[23][6] x[22][7] x[21][8] x[20][9] x[19][10] x[18][11] x[17][12] x[16][13] x[15][14] x[14][15] x[13][16] x[12][17] x[11][18] x[10][19] x[9][20] x[8][21] x[7][22] x[6][23] x[5][24] x[4][25] x[3][26] x[2][27] x[1][28] x[0][29] </args>
+    </group>
+    <allDifferent note="all sums must be different"> rs[] cs[] ds[0] ds[1] </allDifferent>
+    <group class="symmetry-breaking" note="ensuring Frenicle standard form">
+      <intension> lt(%0,%1) </intension>
+      <args> x[0][0] x[0][29] </args>
+      <args> x[0][0] x[29][0] </args>
+      <args> x[0][0] x[29][29] </args>
+      <args> x[0][1] x[1][0] </args>
+    </group>
+  </constraints>
+</instance>

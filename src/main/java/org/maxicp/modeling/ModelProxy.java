@@ -94,4 +94,6 @@ public interface ModelProxy {
     }
 
     <T extends Model> T setModel(T m);
+
+    default int getId() {return -1;}
 }

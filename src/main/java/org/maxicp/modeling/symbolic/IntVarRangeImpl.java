@@ -14,6 +14,7 @@ public class IntVarRangeImpl implements SymbolicIntVar {
     private final int max;
     private final ModelProxy modelProxy;
     private final String id;
+    private final int idd;
 
     public IntVarRangeImpl(ModelProxy modelProxy, String id, int min, int max) {
         this.min = min;
@@ -21,6 +22,7 @@ public class IntVarRangeImpl implements SymbolicIntVar {
         assert min <= max;
         this.id = id;
         this.modelProxy = modelProxy;
+        this.idd = modelProxy.getId();;
     }
 
     public IntVarRangeImpl(ModelProxy modelProxy, int min, int max) {
@@ -74,4 +76,15 @@ public class IntVarRangeImpl implements SymbolicIntVar {
     public ModelProxy getModelProxy() {
         return modelProxy;
     }
+
+    @Override
+    public void fix(int v) {
+        getModelProxy().getConcreteModel().getConcreteVar(this).fix(v);
+    }
+
+    @Override
+    public int getId() {
+        return this.idd;
+    }
+
 }

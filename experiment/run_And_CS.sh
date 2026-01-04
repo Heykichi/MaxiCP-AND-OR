@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+set -u
+set -o pipefail
+
+TIMEOUT_SECONDS=300
+MAIN_CLASS="org.maxicp.modeling.xcsp3.XCSP3MiniAndCS"
+
+usage() {
+    echo "Usage: $0 [<root_directory_with_instances>]"
+    echo "  - No argument : process minicsp23, minicsp24, minicsp25 and write to results.csv"
+    echo "  - With argument : process only the given directory and write to <directory>_results.csv"
+}
+
+cd ../
+ROOT_DIRS=()
+CSV_FILE=""
+
+if [ $# -eq 0 ]; then
+    ROOT_DIRS=(minicsp23 minicsp24 minicsp25)
+    CSV_FILE="results_And_PS.csv"
+else
+    if [ $# -gt 1 ]; then
+        usage
+        exit 1
+    fi
+    ROOT_DIRS=("$1")
+    CSV_FILE="${ROOT_DIRS[0]}_results_ANDOR.csv"
+fi
+
+VALID_ROOTS=()
+for dir in "${ROOT_DIRS[@]}"; do
+    if [ -d "$dir" ]; then
+        VALID_ROOTS+=("$dir")
+    else
+        echo "Warning: directory '$dir' not found, skipping."
+    fi
+done
+
+if [ ${#VALID_ROOTS[@]} -eq 0 ]; then
+    echo "Error: none of the specified root directories exist."
+    exit 1
+fi
+
+if [ -e "$CSV_FILE" ]; then
+    echo "Error: file '$CSV_FILE' already exists. Aborting to prevent overwrite."
+    exit 1
+fi
+
+echo "Results file : $CSV_FILE"
+printf "Processing root directories:"
+for d in "${VALID_ROOTS[@]}"; do
+    printf " %s" "$d"
+done
+printf "\n"
+
+echo "instance,choice,fail,solutions,AND_nodes,completed,exec_time_ms,search_ms,compute_ms,status" > "experiment/$CSV_FILE"
+
+extract_num() {
+  printf '%s\n' "$1" | awk -v k="$2" '
+    {
+      if (match($0, k "[[:space:]]*:[[:space:]]*[0-9]+")) {
+        s = substr($0, RSTART, RLENGTH)
+        gsub(/[^0-9]/, "", s)
+        print s
+        exit
+      }
+    }
+  '
+}
+
+process_root() {
+    local ROOT_DIR="$1"
+
+    echo "==== Processing root directory: $ROOT_DIR ===="
+
+    while IFS= read -r instance; do
+
+        echo "==> Processing $instance"
+        inst_name=$(basename "$instance")
+
+        tmp_out="tmp_output_$$.txt"
+        timeout "${TIMEOUT_SECONDS}s" mvn -q exec:java \
+            -Dexec.mainClass="$MAIN_CLASS" \
+            -Dexec.args="$instance" \
+            -Dexec.jvmArgs="-Xms1g -Xmx4g" > "$tmp_out" 2>&1
+
+        exit_code=$?
+        output=$(<"$tmp_out")
+        rm -f "$tmp_out"
+
+        if [ $exit_code -eq 124 ]; then
+            status="TIMEOUT"
+        elif [ $exit_code -ne 0 ]; then
+            status="ERROR_$exit_code"
+        else
+            status="OK"
+        fi
+
+        search_ms=$(extract_num "$output" "Search time")
+        compu_ms=$(extract_num "$output" "Computation time")
+        exec_ms=$(extract_num "$output" "Execution time")
+        choice=$(extract_num "$output" "#choice")
+        fail=$(extract_num "$output" "#fail")
+        sols=$(extract_num "$output" "#sols")
+        ANode=$(extract_num "$output" "#And nodes")
+        completed=$(printf '%s\n' "$output" | grep 'completed' | awk '{print $3}' || echo "")
+
+
+        echo "$inst_name,$choice,$fail,$sols,$ANode,$completed,$exec_ms,$search_ms,$compu_ms,$status" >> "experiment/$CSV_FILE"
+
+    done < <(find "$ROOT_DIR" -type f -name '*.col' | sort)
+}
+
+# Process all valid root directories
+for root in "${VALID_ROOTS[@]}"; do
+    process_root "$root"
+done
+
+echo "Done. Results written to $CSV_FILE"

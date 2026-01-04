@@ -80,7 +80,6 @@ public abstract class AbstractSearchMethod<T> implements SearchMethod {
                     startSolve(statistics, limit, onNodeVisit);
                     statistics.setCompleted();
                 } catch (StopSearchException ignored) {
-
                 }
             }
         });

@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 public class CPBoolVarImpl implements CPBoolVar {
 
     private CPIntVar binaryVar;
+    private final int id;
 
     /**
      * Create a boolean variable view from the binary variable
@@ -23,10 +24,12 @@ public class CPBoolVarImpl implements CPBoolVar {
             throw new IllegalArgumentException("must be a binary {0,1} variable");
         }
         this.binaryVar = binaryVar;
+        this.id = binaryVar.getModelProxy().getId();
     }
 
     public CPBoolVarImpl(CPSolver cp) {
         this.binaryVar = new CPIntVarImpl(cp, 0, 1);
+        this.id = cp.getModelProxy().getId();
     }
 
     @Override
@@ -154,5 +157,10 @@ public class CPBoolVarImpl implements CPBoolVar {
     @Override
     public ModelProxy getModelProxy() {
         return getSolver().getModelProxy();
+    }
+
+    @Override
+    public int getId() {
+        return this.id;
     }
 }

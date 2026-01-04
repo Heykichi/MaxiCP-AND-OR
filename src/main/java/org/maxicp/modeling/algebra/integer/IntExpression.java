@@ -28,6 +28,8 @@ public interface IntExpression extends Expression {
      */
     boolean contains(int v);
 
+    default void fix(int v){}
+
     /**
      * Fill an array of minimum size size() with a *superset* of the domain of this expression.
      * Returns `v`, the size of the domain after it has been computed, with {@code v <= size()}.
@@ -85,5 +87,9 @@ public interface IntExpression extends Expression {
                 return String.format("{%d..%d}", min, max);
             }
         }
+    }
+
+    default int getId(){
+        return -1;
     }
 }

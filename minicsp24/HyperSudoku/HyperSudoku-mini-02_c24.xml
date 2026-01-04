@@ -1,0 +1,29 @@
+<instance format="XCSP3" type="CSP">
+  <variables>
+    <array id="x" note="x[i][j] is the value of cell with coordinates (i,j)" size="[4][4]"> 1..4 </array>
+  </variables>
+  <constraints>
+    <group note="imposing distinct values on each row and each column">
+      <allDifferent> %... </allDifferent>
+      <args> x[0][] </args>
+      <args> x[1][] </args>
+      <args> x[2][] </args>
+      <args> x[3][] </args>
+      <args> x[][0] </args>
+      <args> x[][1] </args>
+      <args> x[][2] </args>
+      <args> x[][3] </args>
+    </group>
+    <group note="imposing distinct values on (main) blocks">
+      <allDifferent> %... </allDifferent>
+      <args> x[0..1][0..1] </args>
+      <args> x[0..1][2..3] </args>
+      <args> x[2..3][0..1] </args>
+      <args> x[2..3][2..3] </args>
+    </group>
+    <group note="imposing distinct values on shaded blocks">
+      <allDifferent> %... </allDifferent>
+      <args> x[1..2][1..2] </args>
+    </group>
+  </constraints>
+</instance>

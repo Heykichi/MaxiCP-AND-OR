@@ -46,4 +46,9 @@ public class StateStack<E> {
     public E get(int index) {
         return stack.get(index);
     }
+
+    public E getLastElement() {
+        if (size.value() == 0) return null;
+        return stack.get(size.value() - 1);
+    }
 }

@@ -30,9 +30,13 @@ module org.maxicp {
     exports org.maxicp.cp.engine.constraints.scheduling;
     exports org.maxicp.cp.engine.constraints.setvar;
     exports org.maxicp.cp.engine.constraints.seqvar;
+    exports org.maxicp.andor;
+    exports org.maxicp.andor.examples.equation;
 
     requires org.json;
     requires xcsp3.tools;
     requires java.xml;
     requires java.compiler;
+    requires jdk.unsupported.desktop;
+    requires junit;
 }

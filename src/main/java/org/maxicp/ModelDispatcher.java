@@ -5,17 +5,29 @@
 
 package org.maxicp;
 
+import org.maxicp.andor.ConstraintGraph;
+import org.maxicp.cp.modeling.ConcreteCPModel;
 import org.maxicp.cp.modeling.ModelProxyInstantiatorWithCP;
 import org.maxicp.modeling.*;
 import org.maxicp.modeling.algebra.Expression;
+import org.maxicp.modeling.algebra.bool.BoolExpression;
+import org.maxicp.modeling.algebra.bool.Eq;
 import org.maxicp.modeling.algebra.integer.IntExpression;
+import org.maxicp.modeling.algebra.integer.Sum;
 import org.maxicp.modeling.concrete.ConcreteModel;
+import org.maxicp.modeling.constraints.AllDifferent;
+import org.maxicp.modeling.constraints.ExpressionIsTrue;
+import org.maxicp.modeling.constraints.NegTable;
+import org.maxicp.modeling.constraints.Table;
+import org.maxicp.modeling.constraints.helpers.CacheScope;
 import org.maxicp.modeling.symbolic.*;
 import org.maxicp.search.BestFirstSearch;
 import org.maxicp.search.ConcurrentDFSearch;
 import org.maxicp.search.DFSearch;
 import org.maxicp.util.Ints;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -28,11 +40,16 @@ import static org.maxicp.Constants.HORIZON;
 public class ModelDispatcher implements ModelProxyInstantiator, AutoCloseable, ModelProxyInstantiatorWithCP, ModelProxy {
     private Model initialModel;
     private ThreadLocal<Model> currentModel;
+    private ConstraintGraph graph;
+    private int id = -1;
+    private List<IntExpression> preload ;
 
     public ModelDispatcher() {
         initialModel = SymbolicModel.emptyModel(this);
         currentModel = new ThreadLocal<>();
         currentModel.set(initialModel);
+        graph = null;
+        preload = new ArrayList<>();
     }
 
     /**
@@ -70,6 +87,14 @@ public class ModelDispatcher implements ModelProxyInstantiator, AutoCloseable, M
         IntVar[] out = new IntVar[n];
         for(int i = 0; i < n; i++)
             out[i] = new IntVarRangeImpl(this, 0, domSize-1);
+        preload.addAll(List.of(out));
+        return out;
+    }
+    public IntVar[] intVarArray(String id, int n, int domSize) {
+        IntVar[] out = new IntVar[n];
+        for(int i = 0; i < n; i++)
+            out[i] = new IntVarRangeImpl(this,id+i, 0, domSize-1);
+        preload.addAll(List.of(out));
         return out;
     }
 
@@ -77,27 +102,38 @@ public class ModelDispatcher implements ModelProxyInstantiator, AutoCloseable, M
         IntExpression[] t = new IntExpression[n];
         for (int i = 0; i < n; i++)
             t[i] = body.apply(i);
+        preload.addAll(List.of(t));
         return t;
     }
 
     public IntVar intVar(int min, int max) {
-        return new IntVarRangeImpl(this, min, max);
+        IntVar intVar = new IntVarRangeImpl(this, min, max);
+        preload.add(intVar);
+        return intVar;
     }
 
     public IntVar intVar(String id, int min, int max) {
-        return new IntVarRangeImpl(this, id, min, max);
+        IntVar intVar = new IntVarRangeImpl(this, id, min, max);
+        preload.add(intVar);
+        return intVar;
     }
 
     public IntVar intVar(int[] values) {
-        return new IntVarSetImpl(this, Set.copyOf(Ints.asList(values)));
+        IntVar intVar = new IntVarSetImpl(this, Set.copyOf(Ints.asList(values)));
+        preload.add(intVar);
+        return intVar;
     }
 
     public IntVar intVar(Set<Integer> values) {
-        return new IntVarSetImpl(this, values);
+        IntVar intVar = new IntVarSetImpl(this, values);
+        preload.add(intVar);
+        return intVar;
     }
 
     public IntVar intVar(String id, int[] values) {
-        return new IntVarSetImpl(this, id, Set.copyOf(Ints.asList(values)));
+        IntVar intVar = new IntVarSetImpl(this, id, Set.copyOf(Ints.asList(values)));
+        preload.add(intVar);
+        return intVar;
     }
 
     public IntVar constant(int value) {
@@ -132,6 +168,7 @@ public class ModelDispatcher implements ModelProxyInstantiator, AutoCloseable, M
         IntervalVar[] out = new IntervalVar[n];
         for (int i = 0 ; i < n ; i++)
             out[i] = body.apply(i);
+
         return out;
     }
 
@@ -183,5 +220,36 @@ public class ModelDispatcher implements ModelProxyInstantiator, AutoCloseable, M
 
     public <U extends Comparable<U>> BestFirstSearch<U> bestFirstSearch(Supplier<Runnable[]> branching, Supplier<U> nodeEvaluator) {
         return new BestFirstSearch<U>(this, branching, nodeEvaluator);
+    }
+
+    public ConstraintGraph createGraph(ConcreteCPModel cp) {
+        if (graph == null) graph = new ConstraintGraph(cp.getStateManager());
+        graph.addNode(preload.toArray(new IntExpression[0]));
+
+        List<IntExpression> constrainedNodes = new ArrayList<>();
+        for (Constraint c : getConstraints()) {
+            Expression[] tab = switch (c) {
+                case Table t -> t.x();
+                case NegTable t -> t.x();
+                case ExpressionIsTrue et -> et.scope().toArray(new Expression[0]);
+                case AllDifferent all -> all.scope().toArray(new Expression[0]);
+                default -> throw new IllegalStateException("Unknown constraint type: " + c.getClass());
+            };
+            constrainedNodes.clear();
+            for (Expression e : tab) expandExpression(constrainedNodes, e);
+            if (constrainedNodes.size() > 1) graph.addEdge(constrainedNodes.toArray(new IntExpression[0]));
+        }
+        return graph;
+    }
+
+    private void expandExpression(List<IntExpression> constrainedNodes, Expression exp) {
+        Expression[] exps = exp.subexpressions().toArray(new Expression[0]);
+        if (exps.length == 0) constrainedNodes.add((IntExpression) exp);
+        else for (Expression e : exps) expandExpression(constrainedNodes, e);
+    }
+    @Override
+    public int getId() {
+        id ++;
+        return this.id;
     }
 }

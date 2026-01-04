@@ -26,6 +26,7 @@ public class MaxiCP implements CPSolver {
 
     private final StateManager sm;
     private final ModelProxy modelProxy;
+    private int id = -1;
 
     public MaxiCP(StateManager sm) {
         this.sm = sm;

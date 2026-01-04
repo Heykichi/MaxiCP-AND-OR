@@ -1,5 +1,6 @@
 package org.maxicp.modeling.algebra.bool;
 
+import org.junit.Ignore;
 import org.maxicp.modeling.algebra.Expression;
 import org.maxicp.modeling.algebra.NonLeafExpressionNode;
 import org.maxicp.modeling.algebra.VariableNotFixedException;
@@ -21,7 +22,6 @@ public record InSet(IntExpression a, Set<Integer> b) implements SymbolicBoolExpr
         return b.contains(a.evaluate());
     }
 
-
     @Override
     public IntExpression mapSubexpressions(Function<Expression, Expression> f) {
         return new InSet((IntExpression) f.apply(a), b);
@@ -31,4 +31,5 @@ public record InSet(IntExpression a, Set<Integer> b) implements SymbolicBoolExpr
     public String toString() {
         return show();
     }
+
 }

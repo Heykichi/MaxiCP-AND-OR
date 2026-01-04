@@ -29,7 +29,7 @@ import static org.maxicp.search.Searches.*;
 public class JobShop {
 
     public static void main(String[] args) {
-        InputReader inputReader = new InputReader("data/JOBSHOP/ft10.txt");//""data/JOBSHOP/jobshop-6-6-0");
+        InputReader inputReader = new InputReader("data/JOBSHOP/jobshop-2-2-0");//""data/JOBSHOP/jobshop-6-6-0");
         for (int i = 0 ; i < 4 ; i++)
             inputReader.skipLine(); // ignore first lines
         int nJobs = inputReader.getInt();

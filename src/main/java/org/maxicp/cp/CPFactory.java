@@ -14,10 +14,10 @@ import org.maxicp.cp.engine.constraints.seqvar.Exclude;
 import org.maxicp.cp.engine.constraints.seqvar.Insert;
 import org.maxicp.cp.engine.constraints.seqvar.NotBetween;
 import org.maxicp.cp.engine.constraints.seqvar.Require;
-import org.maxicp.cp.engine.constraints.setvar.IsIncluded;
 import org.maxicp.cp.engine.core.*;
 import org.maxicp.cp.engine.constraints.scheduling.Activity;
 import org.maxicp.search.DFSearch;
+import org.maxicp.search.DFSearchMini_Or;
 import org.maxicp.search.Objective;
 import org.maxicp.state.copy.Copier;
 import org.maxicp.state.trail.Trailer;
@@ -386,6 +386,10 @@ public final class CPFactory {
      */
     public static DFSearch makeDfs(CPSolver cp, Supplier<Runnable[]> branching) {
         return new DFSearch(cp.getStateManager(), branching);
+    }
+
+    public static DFSearchMini_Or makeDfsMini(CPSolver cp, Supplier<Runnable[]> branching) {
+        return new DFSearchMini_Or(cp.getStateManager(), branching);
     }
 
     // -------------- constraints -----------------------

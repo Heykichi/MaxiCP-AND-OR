@@ -1,0 +1,56 @@
+<instance format="XCSP3" type="CSP">
+  <variables>
+    <array id="cn" note="clique nodes" size="[2][6]"> 0..36 </array>
+    <array id="ce" note="clique edges" size="[2][6][6]"> 1..36 </array>
+    <array id="cie" note="clique inter-edges" size="[1][6]"> 1..36 </array>
+  </variables>
+  <constraints>
+    <group>
+      <intension> eq(%0,dist(%1,%2)) </intension>
+      <args> ce[0][0][1] cn[0][0] cn[0][1] </args>
+      <args> ce[0][0][2] cn[0][0] cn[0][2] </args>
+      <args> ce[0][0][3] cn[0][0] cn[0][3] </args>
+      <args> ce[0][0][4] cn[0][0] cn[0][4] </args>
+      <args> ce[0][0][5] cn[0][0] cn[0][5] </args>
+      <args> ce[0][1][2] cn[0][1] cn[0][2] </args>
+      <args> ce[0][1][3] cn[0][1] cn[0][3] </args>
+      <args> ce[0][1][4] cn[0][1] cn[0][4] </args>
+      <args> ce[0][1][5] cn[0][1] cn[0][5] </args>
+      <args> ce[0][2][3] cn[0][2] cn[0][3] </args>
+      <args> ce[0][2][4] cn[0][2] cn[0][4] </args>
+      <args> ce[0][2][5] cn[0][2] cn[0][5] </args>
+      <args> ce[0][3][4] cn[0][3] cn[0][4] </args>
+      <args> ce[0][3][5] cn[0][3] cn[0][5] </args>
+      <args> ce[0][4][5] cn[0][4] cn[0][5] </args>
+      <args> ce[1][0][1] cn[1][0] cn[1][1] </args>
+      <args> ce[1][0][2] cn[1][0] cn[1][2] </args>
+      <args> ce[1][0][3] cn[1][0] cn[1][3] </args>
+      <args> ce[1][0][4] cn[1][0] cn[1][4] </args>
+      <args> ce[1][0][5] cn[1][0] cn[1][5] </args>
+      <args> ce[1][1][2] cn[1][1] cn[1][2] </args>
+      <args> ce[1][1][3] cn[1][1] cn[1][3] </args>
+      <args> ce[1][1][4] cn[1][1] cn[1][4] </args>
+      <args> ce[1][1][5] cn[1][1] cn[1][5] </args>
+      <args> ce[1][2][3] cn[1][2] cn[1][3] </args>
+      <args> ce[1][2][4] cn[1][2] cn[1][4] </args>
+      <args> ce[1][2][5] cn[1][2] cn[1][5] </args>
+      <args> ce[1][3][4] cn[1][3] cn[1][4] </args>
+      <args> ce[1][3][5] cn[1][3] cn[1][5] </args>
+      <args> ce[1][4][5] cn[1][4] cn[1][5] </args>
+    </group>
+    <group>
+      <intension> eq(%0,dist(%1,%2)) </intension>
+      <args> cie[0][0] cn[0][0] cn[1][0] </args>
+      <args> cie[0][1] cn[0][1] cn[1][1] </args>
+      <args> cie[0][2] cn[0][2] cn[1][2] </args>
+      <args> cie[0][3] cn[0][3] cn[1][3] </args>
+      <args> cie[0][4] cn[0][4] cn[1][4] </args>
+      <args> cie[0][5] cn[0][5] cn[1][5] </args>
+    </group>
+    <group>
+      <allDifferent> %... </allDifferent>
+      <args> cn[][] </args>
+      <args> ce[0][0][1..5] ce[0][1][2..5] ce[0][2][3..5] ce[0][3][4..5] ce[0][4][5] ce[1][0][1..5] ce[1][1][2..5] ce[1][2][3..5] ce[1][3][4..5] ce[1][4][5] cie[0][] </args>
+    </group>
+  </constraints>
+</instance>

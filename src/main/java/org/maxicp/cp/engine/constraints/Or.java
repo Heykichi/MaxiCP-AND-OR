@@ -14,7 +14,7 @@ import static org.maxicp.util.exception.InconsistencyException.INCONSISTENCY;
 /**
  * Logical or constraint {@code  x1 or x2 or ... xn}
  */
-public class Or extends AbstractCPConstraint { // x1 or x2 or ... xn
+public class  Or extends AbstractCPConstraint { // x1 or x2 or ... xn
 
     private final CPBoolVar[] x;
     private final int n;

@@ -10,10 +10,12 @@ public class CPIntVarConstant implements CPIntVar{
 
     private final CPSolver cp;
     private final int value;
+    private final int id;
 
     public CPIntVarConstant(CPSolver cp, int value) {
         this.cp = cp;
         this.value = value;
+        this.id = cp.getModelProxy().getId();
     }
 
     @Override
@@ -129,5 +131,10 @@ public class CPIntVarConstant implements CPIntVar{
     @Override
     public String toString() {
         return Integer.toString(value);
+    }
+
+    @Override
+    public int getId() {
+        return this.id;
     }
 }

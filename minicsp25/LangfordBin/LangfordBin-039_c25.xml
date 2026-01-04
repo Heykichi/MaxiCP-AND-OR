@@ -1,0 +1,142 @@
+<instance format="XCSP3" type="CSP">
+  <variables>
+    <array id="v" note="v[i] is the ith value of the Langford's sequence" size="[78]"> 1..39 </array>
+    <array id="p" note="p[j] is the first (resp., second) position of 1+j/2 in v if j is even (resp., odd)" size="[78]"> 0..77 </array>
+  </variables>
+  <constraints>
+    <group>
+      <element>
+        <list> v[] </list>
+        <index> %0 </index>
+        <value> %1 </value>
+      </element>
+      <args> p[0] 1 </args>
+      <args> p[2] 2 </args>
+      <args> p[4] 3 </args>
+      <args> p[6] 4 </args>
+      <args> p[8] 5 </args>
+      <args> p[10] 6 </args>
+      <args> p[12] 7 </args>
+      <args> p[14] 8 </args>
+      <args> p[16] 9 </args>
+      <args> p[18] 10 </args>
+      <args> p[20] 11 </args>
+      <args> p[22] 12 </args>
+      <args> p[24] 13 </args>
+      <args> p[26] 14 </args>
+      <args> p[28] 15 </args>
+      <args> p[30] 16 </args>
+      <args> p[32] 17 </args>
+      <args> p[34] 18 </args>
+      <args> p[36] 19 </args>
+      <args> p[38] 20 </args>
+      <args> p[40] 21 </args>
+      <args> p[42] 22 </args>
+      <args> p[44] 23 </args>
+      <args> p[46] 24 </args>
+      <args> p[48] 25 </args>
+      <args> p[50] 26 </args>
+      <args> p[52] 27 </args>
+      <args> p[54] 28 </args>
+      <args> p[56] 29 </args>
+      <args> p[58] 30 </args>
+      <args> p[60] 31 </args>
+      <args> p[62] 32 </args>
+      <args> p[64] 33 </args>
+      <args> p[66] 34 </args>
+      <args> p[68] 35 </args>
+      <args> p[70] 36 </args>
+      <args> p[72] 37 </args>
+      <args> p[74] 38 </args>
+      <args> p[76] 39 </args>
+    </group>
+    <group>
+      <element>
+        <list> v[] </list>
+        <index> %0 </index>
+        <value> %1 </value>
+      </element>
+      <args> p[1] 1 </args>
+      <args> p[3] 2 </args>
+      <args> p[5] 3 </args>
+      <args> p[7] 4 </args>
+      <args> p[9] 5 </args>
+      <args> p[11] 6 </args>
+      <args> p[13] 7 </args>
+      <args> p[15] 8 </args>
+      <args> p[17] 9 </args>
+      <args> p[19] 10 </args>
+      <args> p[21] 11 </args>
+      <args> p[23] 12 </args>
+      <args> p[25] 13 </args>
+      <args> p[27] 14 </args>
+      <args> p[29] 15 </args>
+      <args> p[31] 16 </args>
+      <args> p[33] 17 </args>
+      <args> p[35] 18 </args>
+      <args> p[37] 19 </args>
+      <args> p[39] 20 </args>
+      <args> p[41] 21 </args>
+      <args> p[43] 22 </args>
+      <args> p[45] 23 </args>
+      <args> p[47] 24 </args>
+      <args> p[49] 25 </args>
+      <args> p[51] 26 </args>
+      <args> p[53] 27 </args>
+      <args> p[55] 28 </args>
+      <args> p[57] 29 </args>
+      <args> p[59] 30 </args>
+      <args> p[61] 31 </args>
+      <args> p[63] 32 </args>
+      <args> p[65] 33 </args>
+      <args> p[67] 34 </args>
+      <args> p[69] 35 </args>
+      <args> p[71] 36 </args>
+      <args> p[73] 37 </args>
+      <args> p[75] 38 </args>
+      <args> p[77] 39 </args>
+    </group>
+    <group>
+      <intension> eq(%0,add(%1,%2)) </intension>
+      <args> p[0] 2 p[1] </args>
+      <args> p[2] 3 p[3] </args>
+      <args> p[4] 4 p[5] </args>
+      <args> p[6] 5 p[7] </args>
+      <args> p[8] 6 p[9] </args>
+      <args> p[10] 7 p[11] </args>
+      <args> p[12] 8 p[13] </args>
+      <args> p[14] 9 p[15] </args>
+      <args> p[16] 10 p[17] </args>
+      <args> p[18] 11 p[19] </args>
+      <args> p[20] 12 p[21] </args>
+      <args> p[22] 13 p[23] </args>
+      <args> p[24] 14 p[25] </args>
+      <args> p[26] 15 p[27] </args>
+      <args> p[28] 16 p[29] </args>
+      <args> p[30] 17 p[31] </args>
+      <args> p[32] 18 p[33] </args>
+      <args> p[34] 19 p[35] </args>
+      <args> p[36] 20 p[37] </args>
+      <args> p[38] 21 p[39] </args>
+      <args> p[40] 22 p[41] </args>
+      <args> p[42] 23 p[43] </args>
+      <args> p[44] 24 p[45] </args>
+      <args> p[46] 25 p[47] </args>
+      <args> p[48] 26 p[49] </args>
+      <args> p[50] 27 p[51] </args>
+      <args> p[52] 28 p[53] </args>
+      <args> p[54] 29 p[55] </args>
+      <args> p[56] 30 p[57] </args>
+      <args> p[58] 31 p[59] </args>
+      <args> p[60] 32 p[61] </args>
+      <args> p[62] 33 p[63] </args>
+      <args> p[64] 34 p[65] </args>
+      <args> p[66] 35 p[67] </args>
+      <args> p[68] 36 p[69] </args>
+      <args> p[70] 37 p[71] </args>
+      <args> p[72] 38 p[73] </args>
+      <args> p[74] 39 p[75] </args>
+      <args> p[76] 40 p[77] </args>
+    </group>
+  </constraints>
+</instance>

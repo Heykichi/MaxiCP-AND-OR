@@ -94,7 +94,7 @@ public class DFSearch extends RunnableSearchMethod {
 
     @Override
     protected void startSolve(SearchStatistics statistics, Predicate<SearchStatistics> limit, Runnable onNodeVisit) {
-        currNodeId = -1;
+        currNodeId = 0;
         Stack<Runnable> alternatives = new Stack<Runnable>();
         expandNode(alternatives, statistics, onNodeVisit, currNodeId);
         while (!alternatives.isEmpty()) {

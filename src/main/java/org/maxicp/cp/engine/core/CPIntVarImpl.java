@@ -24,6 +24,7 @@ public class CPIntVarImpl implements CPIntVar {
     private StateStack<CPConstraint> onDomain;
     private StateStack<CPConstraint> onBind;
     private StateStack<CPConstraint> onBounds;
+    private final int id;
 
     private IntDomainListener domListener = new IntDomainListener() {
         @Override
@@ -80,6 +81,7 @@ public class CPIntVarImpl implements CPIntVar {
         onDomain = new StateStack<>(cp.getStateManager());
         onBind = new StateStack<>(cp.getStateManager());
         onBounds = new StateStack<>(cp.getStateManager());
+        this.id = cp.getModelProxy().getId();
     }
 
 
@@ -225,5 +227,10 @@ public class CPIntVarImpl implements CPIntVar {
     @Override
     public ModelProxy getModelProxy() {
         return getSolver().getModelProxy();
+    }
+
+    @Override
+    public int getId() {
+        return this.id;
     }
 }

@@ -5,6 +5,10 @@
 
 package org.maxicp.search;
 
+import org.maxicp.andor.SlicedTable;
+
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -19,11 +23,15 @@ public class SearchStatistics {
     private int nNodes = 0;
     private int nSolutions = 0;
     private boolean completed = false;
+    private int nAndNodes = 0;
+    private List<Map<Integer, Integer>> solutions = null;
+    private List<SlicedTable> slicedTables = null;
 
     public String toString() {
         return "\n\t#choice: " + nNodes
                 + "\n\t#fail: " + nFailures
                 + "\n\t#sols : " + nSolutions
+                + "\n\t#And nodes : " + nAndNodes
                 + "\n\tcompleted : " + completed + "\n";
     }
 
@@ -37,6 +45,14 @@ public class SearchStatistics {
 
     public void incrSolutions() {
         nSolutions++;
+    }
+
+    public void incrSolutions(int n) {
+        nSolutions += n;
+    }
+
+    public void incrAndNodes() {
+        nAndNodes ++;
     }
 
     public void setCompleted() {
@@ -58,6 +74,20 @@ public class SearchStatistics {
     public boolean isCompleted() {
         return completed;
     }
+
+    public void setSolutions(List<Map<Integer, Integer>> solutions) {
+        this.solutions = solutions;
+    }
+
+    public void setSlicedTables(List<SlicedTable> slicedTables) {
+        this.slicedTables = slicedTables;
+    }
+
+    public List<Map<Integer, Integer>> getSolutions() {
+        return solutions;}
+
+    public List<SlicedTable> getSlicedTables() {return
+            slicedTables;}
 
     @Override
     public boolean equals(Object o) {

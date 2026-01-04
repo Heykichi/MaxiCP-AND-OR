@@ -1,5 +1,6 @@
 package org.maxicp.modeling.xcsp3;
 
+import jdk.swing.interop.SwingInterOpUtils;
 import org.maxicp.ModelDispatcher;
 import org.maxicp.modeling.Factory;
 import org.maxicp.modeling.algebra.VariableNotFixedException;
@@ -7,6 +8,7 @@ import org.maxicp.modeling.algebra.bool.*;
 import org.maxicp.modeling.algebra.integer.*;
 import org.maxicp.modeling.constraints.*;
 import org.maxicp.search.DFSearch;
+import org.maxicp.search.SearchStatistics;
 import org.maxicp.util.ImmutableSet;
 import org.maxicp.util.exception.NotImplementedException;
 import org.maxicp.util.exception.NotYetImplementedException;
@@ -27,8 +29,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.maxicp.search.Searches.EMPTY;
-import static org.maxicp.search.Searches.branch;
+import static org.maxicp.modeling.Factory.eq;
+import static org.maxicp.modeling.Factory.neq;
+import static org.maxicp.search.Searches.*;
 
 public class XCSP3 extends XCallbacksDecomp {
     public record XCSP3LoadedInstance(ModelDispatcher md, IntExpression[] decisionVars, Supplier<String> solutionGenerator) implements AutoCloseable {
@@ -63,38 +66,43 @@ public class XCSP3 extends XCallbacksDecomp {
             b.append("\n\t</values>\n</instantiation>");
             return b.toString();
         };
-
         return new XCSP3LoadedInstance(xcsp3.md, xcsp3.decisionVars.stream().map(xcsp3.varHashMap::get).toArray(IntExpression[]::new), solutionGenerator);
     }
 
-    public static void main(String[] args) throws Exception {
-        XCSP3LoadedInstance instance = load("/Users/gderval/Downloads/Queens/Queens-m1-s1/Queens-0010-m1.xml.lzma");
+    // ====================================================================================
 
+    public static void main(String[] args) throws Exception {
+        String instanceName = (args.length > 0) ? args[0] : "minicsp24/HyperSudoku/HyperSudoku-mini-02_c24.xml";
+        XCSP3LoadedInstance instance = load(instanceName);
         IntExpression[] q = instance.decisionVars();
 
         Supplier<Runnable[]> branching = () -> {
-            int idx = -1; // index of the first variable that is not fixed
-            for (int k = 0; k < q.length; k++)
-                if (!q[k].isFixed()) {
-                    idx=k;
-                    break;
-                }
-            if (idx == -1)
+            IntExpression qs = selectMin(q,
+                    qi -> qi.size() > 1,
+                    qi -> qi.size());
+            if (qs == null)
                 return EMPTY;
             else {
-                IntExpression qi = q[idx];
-                int v = qi.min();
-                Runnable left = () -> instance.md().add(new Eq(qi, v));
-                Runnable right = () -> instance.md().add(new NotEq(qi, v));
-                return branch(left,right);
+                int v = qs.min();
+                return branch(() -> instance.md().add(eq(qs, v)), () -> instance.md().add(neq(qs, v)));
             }
         };
-
         instance.md().runCP((cp) -> {
             DFSearch search = cp.dfSearch(branching);
-            System.out.println("Total number of solutions: " + search.solve().numberOfSolutions());
+//            search.onSolution(() -> {
+//                System.out.print("|");
+//            });
+            long debut = System.nanoTime();
+            SearchStatistics stats = search.solve();
+            //SearchStatistics stats = search.solve();
+            System.out.println(stats);
+            long fin = System.nanoTime();
+            System.out.format("Execution time : %s ms\n", (fin - debut) / 1_000_000);
+
         });
     }
+
+    // ====================================================================================
 
     private final LinkedHashMap<String, IntExpression> varHashMap;
     private final LinkedHashSet<String> decisionVars;
