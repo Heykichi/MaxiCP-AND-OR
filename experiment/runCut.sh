@@ -4,7 +4,7 @@ set -u
 set -o pipefail
 
 TIMEOUT_SECONDS=300
-MAIN_CLASS="org.maxicp.modeling.xcsp3.graphColoringTestCut"
+MAIN_CLASS="org.maxicp.modeling.xcsp3.XCSP3TestCut"
 
 usage() {
     echo "Usage: $0 [<root_directory_with_instances>]"
