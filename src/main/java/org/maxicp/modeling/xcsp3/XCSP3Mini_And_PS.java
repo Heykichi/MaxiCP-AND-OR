@@ -7,7 +7,7 @@ import org.maxicp.modeling.algebra.VariableNotFixedException;
 import org.maxicp.modeling.algebra.bool.*;
 import org.maxicp.modeling.algebra.integer.*;
 import org.maxicp.modeling.constraints.*;
-import org.maxicp.search.DFSearchMini_And_PS;
+import org.maxicp.andor.search.DFSearchMini_And_PS;
 import org.maxicp.search.SearchStatistics;
 import org.maxicp.util.ImmutableSet;
 import org.maxicp.util.exception.NotImplementedException;
@@ -73,11 +73,12 @@ public class XCSP3Mini_And_PS extends XCallbacksDecomp {
         XCSP3LoadedInstance instance = load(instanceName);
         IntExpression[] q = instance.decisionVars();
 
-        int to_fix = Math.max(q.length / 20, 4);
-        int fix_to_split = Math.min(q.length / 10, 10);
+        int sizeToFix = Math.max(q.length / 20, 4);
+        int fixToSplit = Math.min(q.length / 10, 10);
+
         instance.md().runCP((cp) -> {
             ConstraintGraph graph = instance.md().createGraph(cp);
-            DFSearchMini_And_PS search = cp.dfSearchMini_And_PS(graph, fiducciaMattheyses(graph,to_fix, false), firstFail());
+            DFSearchMini_And_PS search = cp.dfSearchMini_And_PS(graph, fiducciaMattheyses(graph,sizeToFix, false), firstFail());
 
             long debut = System.nanoTime();
             SearchStatistics stats = search.solve(false);

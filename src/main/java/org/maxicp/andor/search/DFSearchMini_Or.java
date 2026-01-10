@@ -3,9 +3,10 @@
  * Copyright (c)  2023 UCLouvain
  */
 
-package org.maxicp.search;
+package org.maxicp.andor.search;
 
 import org.maxicp.modeling.ModelProxy;
+import org.maxicp.search.*;
 import org.maxicp.state.StateManager;
 import org.maxicp.util.exception.InconsistencyException;
 

@@ -3,7 +3,7 @@
  * Copyright (c)  2023 UCLouvain
  */
 
-package org.maxicp.search;
+package org.maxicp.andor.search;
 
 import org.maxicp.andor.Branch;
 import org.maxicp.andor.ConstraintGraph;
@@ -12,6 +12,7 @@ import org.maxicp.andor.SubBranch;
 import org.maxicp.modeling.ModelProxy;
 import org.maxicp.modeling.algebra.integer.IntExpression;
 import org.maxicp.modeling.symbolic.IntVarRangeImpl;
+import org.maxicp.search.*;
 import org.maxicp.state.StateManager;
 import org.maxicp.util.exception.InconsistencyException;
 
@@ -88,6 +89,14 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
         throw new RuntimeException("DFSearch type AND/OR wrong input");
     }
 
+    /**
+     * Start the AND/OR depth-first search (DFS), updating the search statistics
+     * and generating solutions, if applicable.
+     *
+     * @param statistics the object that tracks metrics during the search process.
+     * @param solutionsLimit the maximum number of solutions to find before stoping the search.
+     * @param showSolutions a flag indicating whether to output the solutions during the search.
+     */
     protected void startSolve(SearchStatistics statistics, int solutionsLimit, boolean showSolutions) {
         currNodeId = 0;
         this.showSolutions = showSolutions;
@@ -112,6 +121,14 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
         if (!this.complete) throw new StopSearchException();
     }
 
+    /**
+     * Processes solutions generated during the search.
+     * Optionally, it displays the solutions if the corresponding flag is enabled.
+     *
+     * @param statistics the object that tracks metrics during the search process.
+     * @param slicedTables a list of precomputed sliced tables providing data for solution computation.
+     * @param solutionsLimit the maximum number of solutions to process before terminating.
+     */
     private void processSolutions(SearchStatistics statistics, List<SlicedTable> slicedTables, int solutionsLimit) {
         List<Map<Integer, Integer>> listSolutions = computeSlicedTable(slicedTables, solutionsLimit);
         statistics.setSolutions(listSolutions);
@@ -143,6 +160,12 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
         }
     }
 
+    /**
+     * Constructs and returns a map representing a pattern of fixed variables and their assigned values.
+     *
+     * @return a map where keys are the identifiers of fixed variables and values are their
+     *         corresponding fixed values, or {@code null} if no variables are fixed.
+     */
     public Map<Integer, Integer> getPattern() {
         Map<Integer, Integer> pattern = new HashMap<>();
         this.graph.newState();
@@ -155,11 +178,26 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
         return pattern;
     }
 
+    /**
+     * Represents the results of a search process, including the number of solutions
+     * found and the associated processed data in the form of sliced tables.
+     */
     public record Solutions(int nSolutions, List<SlicedTable> slicedTables) {}
 
+    /**
+     * Performs an AND/OR depth-first search (DFS) traversal in the search tree, processing AND/OR branches
+     * and updating the search statistics based on the given parameters.
+     *
+     * @param statistics the object that tracks metrics during the search process
+     * @param parentId the identifier of the parent node in the search tree
+     * @param solutionsLimit the maximum number of solutions to find before halting the search
+     * @return an instance of {@link Solutions}, containing the number of solutions found and the associated sliced tables.
+     */
     private Solutions dfs(SearchStatistics statistics, int parentId,int solutionsLimit) {
         Objects.requireNonNull(this.branching, "No branching instruction");
         Objects.requireNonNull(this.treeBuilding, "No tree building instruction");
+
+        // Get the next branch to process
         Branch branch = treeBuilding.get();
         if (branch == null) {
             if (graph.solutionFound()){
@@ -169,12 +207,11 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
             }
         }
 
+        // Following the branch, start its process
         Solutions solutions;
         if (branch.getVariables() != null && !branch.getVariables().isEmpty()) {
-//            System.out.println("OR");
             solutions = processOrBranch(branch, statistics, parentId, solutionsLimit);
         } else if (branch.getBranches() != null && !branch.getBranches().isEmpty()){
-//            System.out.println("AND");
             solutions = processAndBranch(branch, statistics, parentId, solutionsLimit);
         } else {
             throw new IllegalArgumentException("No branch available");
@@ -182,16 +219,28 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
         return solutions;
     }
 
+    /**
+     * Processes an AND branch of the search tree by iterating through its subbranches,
+     * applying depth-first search (DFS) strategies, and updating search statistics.
+     *
+     * @param branch the current branch of the search tree to process, containing its variables and subbranches
+     * @param statistics the object that tracks metrics during the search process
+     * @param parentId the identifier of the parent node in the search tree
+     * @param solutionsLimit the maximum number of solutions to find before halting the search
+     * @return an instance of {@link Solutions}, containing the number of solutions found and the associated sliced tables.
+     */
     private Solutions processAndBranch(Branch branch, SearchStatistics statistics, int parentId, int solutionsLimit){
         statistics.incrAndNodes();
         final int nodeId = currNodeId++;
         final int[] nSolutions = {1};
         List<List<SlicedTable>> subSolutions = new ArrayList<>();
         AtomicReference<Boolean> breaking = new AtomicReference<>(false);
+        // Process each subbranch
         for (SubBranch B : branch.getBranches()) {
             sm.withNewState(() -> {
                 this.graph.newState(B.getVariables());
                 Solutions newST ;
+                // Adjusts the limit of solutions
                 int limit = solutionsLimit;
                 if (solutionsLimit != Integer.MAX_VALUE) {
                     if (nSolutions[0] >= solutionsLimit) {
@@ -200,6 +249,7 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
                         limit = (int) Math.ceil((double) solutionsLimit / nSolutions[0]);
                     }
                 }
+                // Recursively process the variables of the subbranch
                 if (B.getToFix()) {
                     newST = processOrBranch(new Branch(B.getVariables()), statistics, parentId, limit);
                 } else {
@@ -219,14 +269,26 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
         return new Solutions(nSolutions[0], new ArrayList<SlicedTable>(List.of(new SlicedTable(getPattern(), subSolutions))));
     }
 
+    /**
+     * Processes an OR branch of the search tree by evaluating its variables and subbranches,
+     * applying the branching strategies, and updating search statistics as solutions are found.
+     *
+     * @param branch the current branch of the search tree to process, containing its variables and subbranches
+     * @param statistics the object that tracks metrics during the search process
+     * @param parentId the identifier of the parent node in the search tree
+     * @param solutionsLimit the maximum number of solutions to find before halting the search
+     * @return an instance of {@link Solutions}, containing the number of solutions found and the associated sliced tables.
+     */
     private Solutions processOrBranch(Branch branch, SearchStatistics statistics, int parentId, int solutionsLimit){
         final int nodeId = currNodeId++;
+        // Get the branching Runnable to reduce a variable domaine
         Runnable[] branches = new Runnable[0];
         if (branch.getVariables() != null){
             branches = this.branching.apply(branch.getVariables());
             notifyBranch(nodeId, parentId);
         }
         List<SlicedTable> sols = new ArrayList<>();
+        // Check for a solution or an AND branch
         if (branches.length == 0) {
             this.graph.newState();
             if (this.graph.solutionFound()){
@@ -245,6 +307,7 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
             }
             return null;
         } else {
+            // Process the variables of the branch
             final int[] nSolutions = {0};
             for (Runnable b : branches) {
                 if (sols.size() >= solutionsLimit) {
@@ -253,12 +316,14 @@ public class DFSearchMini_And_CS extends RunnableSearchMethod {
                 }
                 sm.withNewState(() -> {
                     try {
+                        // Apply the Runnable
                         statistics.incrNodes();
                         b.run();
                         int limite = solutionsLimit;
                         if (solutionsLimit != Integer.MAX_VALUE) {
                             limite = solutionsLimit-nSolutions[0];
                         }
+                        // Continue the recursive search
                         Solutions newST = processOrBranch(branch,statistics, nodeId, limite);
                         if (newST != null) {
                             sols.addAll(newST.slicedTables);

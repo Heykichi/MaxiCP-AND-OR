@@ -7,7 +7,11 @@ import org.maxicp.state.datastructures.StateStack;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+/**
+ * The {@code ConstraintGraph} class represents a constraint graph,
+ * typically used for managing relationships between variables in constraint programming.
+ * Nodes in the graph represent decision variables, and edges represent constraints.
+ */
 public class ConstraintGraph {
 
     private Map<IntExpression, Set<IntExpression>> adjacencyList = new HashMap<>();
@@ -19,6 +23,13 @@ public class ConstraintGraph {
         this.stateVars.push(adjacencyList.keySet());
     }
 
+    /**
+     * Checks whether a solution has been found in the current state of the constraint graph.
+     * The method iterates over the latest state variables and checks whether they are all fixed.
+     *
+     * @return {@code true} if all variables in the last recorded state are fixed;
+     *         {@code false} otherwise.
+     */
     public boolean solutionFound() {
         for (IntExpression var : this.stateVars.getLastElement()) {
             if (!var.isFixed()) {
@@ -28,6 +39,13 @@ public class ConstraintGraph {
         return true;
     }
 
+    /**
+     * Retrieves the set of neighbors of the given variable that are not fixed, are part of the
+     * currente state, and have not been removed from the graph.
+     *
+     * @param key the variable whose unfixed neighbors are to be retrieved
+     * @return a set of unfixed neighbors of the specified variable
+     */
     public Set<IntExpression> getUnfixedNeighbors(IntExpression key) {
         return adjacencyList.get(key).stream()
                 .filter(var -> !var.isFixed() && this.stateVars.getLastElement().contains(var) && !this.removedNodes.contains(var))
@@ -43,11 +61,18 @@ public class ConstraintGraph {
                 .collect(Collectors.toSet());
     }
 
-    public ConstraintGraph newState(){
+    /**
+     * Captures a new state in the constraint graph by creating a copy of the current state's
+     * variables and pushing it onto the state stack.
+     * <p>
+     * This method is used to record the current state of the graph so that it can
+     * later be restored or reverted, supporting backtracking and state management within the
+     * solver.
+     */
+    public void newState(){
         Set<IntExpression> newStateValue = new HashSet<>(this.stateVars.getLastElement());
         this.stateVars.push(newStateValue);
         this.removedNodes.clear();
-        return this;
     }
 
     public void newState(Set<IntExpression> Variables){
@@ -57,16 +82,34 @@ public class ConstraintGraph {
 
     public Set<IntExpression> getStateVariables(){return this.stateVars.getLastElement();}
 
+    /**
+     * Adds a node to the constraint graph if it doesn't already exist.
+     * It initializes an empty set of neighbors in the adjacency list.
+     *
+     * @param node the variable to be added as a node in the graph
+     */
     public void addNode(IntExpression node) {
         this.adjacencyList.putIfAbsent(node, new HashSet<IntExpression>());
     }
 
+    /**
+     * Adds nodes to the constraint graph if they don't already exist.
+     * For each node, it initializes an empty set of neighbors in the adjacency list.
+     *
+     * @param nodes an array of variables to be added as nodes in the graph
+     */
     public void addNode(IntExpression[] nodes) {
         for (IntExpression n : nodes) {
             this.adjacencyList.putIfAbsent(n, new HashSet<IntExpression>());
         }
     }
 
+    /**
+     * Adds nodes and an edge between them.
+     *
+     * @param node1 node to be connected
+     * @param node2 node to be connected
+     */
     public void addEdge(IntExpression node1, IntExpression node2) {
         if (node1.equals(node2)) {
             throw new IllegalArgumentException("Self-edge are not allowed");
@@ -75,6 +118,11 @@ public class ConstraintGraph {
         adjacencyList.get(node2).add(node1);
     }
 
+    /**
+     * Adds nodes and adds edges between all pairs of nodes in the given array.
+     *
+     * @param nodes the array of nodes to be connected
+     */
     public void addEdge(IntExpression[] nodes) {
         addNode(nodes);
         for (int i = 0; i < nodes.length; i++) {
@@ -84,10 +132,16 @@ public class ConstraintGraph {
         }
     }
 
-    public void computeStateVariables(){
-        this.stateVars.push(new HashSet<IntExpression>(getUnfixedVariables()));
-    }
-
+    /**
+     * Identifies and returns the connected components of the constraint graph.
+     * Each connected component is represented as a set of variables that are
+     * interconnected through the graph's edges.
+     *
+     * The method uses a depth-first search (DFS) algorithm to traverse the graph.
+     *
+     * @return a list of sets, where each set contains {@code IntVar} objects
+     *         representing a connected component in the constraint graph
+     */
     public List<Set<IntExpression>> findConnectedComponents() {
         List<Set<IntExpression>> subgraphs = new ArrayList<>();
         Set<IntExpression> visited = new HashSet<>();
@@ -102,6 +156,14 @@ public class ConstraintGraph {
         return subgraphs;
     }
 
+    /**
+     * Performs a Depth-First Search (DFS) on the constraint graph starting from the specified node.
+     * The DFS identifies all connected components of the graph by traversing its nodes recursively.
+     *
+     * @param node      the starting node for the DFS
+     * @param visited   the set of nodes that have been visited
+     * @param component the current component being built
+     */
     private void dfs(IntExpression node, Set<IntExpression> visited, Set<IntExpression> component) {
         visited.add(node);
         component.add(node);
@@ -113,17 +175,15 @@ public class ConstraintGraph {
         }
     }
 
-    public void printSubgraph(){
-        List<Set<IntExpression>> subgraphs = findConnectedComponents();
-        System.out.println(
-                subgraphs.stream()
-                        .map(set -> set.stream()
-                                .map(obj -> String.valueOf(obj.getModelProxy()))
-                                .collect(Collectors.joining(", ", "[", "]")))
-                        .collect(Collectors.joining(", ", "[", "]"))
-        );
-    }
-
+    /**
+     * Splits the constraint graph into smaller subbranches based on the connected components
+     * of the graph. Each subbranch represents a subset of variables, and a flag indicates
+     * whether its size is less than or equal to the specified threshold.
+     *
+     * @param sizeToFix the threshold on the number of variables below which we no longer search a split
+     * @return a list of SubBranch objects representing the connected components
+     *         of the graph, or null if the graph cannot be split into multiple components
+     */
     public List<SubBranch> splitGraph(int sizeToFix){
         List<Set<IntExpression>> subgraphs = this.findConnectedComponents();
         List<SubBranch> subBranches = new ArrayList<>();
@@ -156,6 +216,7 @@ public class ConstraintGraph {
     public void restoreNode(IntExpression[] nodeToRestore) {
         Arrays.asList(nodeToRestore).forEach(this.removedNodes::remove);
     }
+
     public void restoreNode(Set<IntExpression> nodeToRestore) {
         this.removedNodes.removeAll(nodeToRestore);
     }

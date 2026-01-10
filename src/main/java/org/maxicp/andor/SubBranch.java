@@ -7,6 +7,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The SubBranch class represents a subset of variables within a branch
+ * of a search tree, typically used in the context of a constraint solving.
+ *
+ * It provides constructors to initializing the SubBranch with different combinations of variables and parameters.
+ */
 public class SubBranch {
     private Set<IntExpression> variables;
     private boolean toFix = false;

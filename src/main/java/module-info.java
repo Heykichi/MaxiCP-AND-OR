@@ -32,6 +32,7 @@ module org.maxicp {
     exports org.maxicp.cp.engine.constraints.seqvar;
     exports org.maxicp.andor;
     exports org.maxicp.andor.examples.equation;
+    exports org.maxicp.andor.search;
 
     requires org.json;
     requires xcsp3.tools;

@@ -1,6 +1,7 @@
 package org.maxicp.modeling.gc_dimacs;
 
 import org.maxicp.ModelDispatcher;
+import org.maxicp.andor.search.DFSearchMini_Or;
 import org.maxicp.cp.modeling.ConcreteCPModel;
 import org.maxicp.modeling.algebra.integer.IntExpression;
 import org.maxicp.modeling.constraints.AllDifferent;
@@ -11,7 +12,7 @@ import static org.maxicp.modeling.Factory.*;
 
 public class GraphColoring_Or {
     public static void main(String[] args) {
-        String instanceName = (args.length > 0) ? args[0] : "graph_coloring/instance/DSJR500.1.col";
+        String instanceName = (args.length > 0) ? args[0] : "graph_coloring/instance/david.col";
         InputReader reader = new InputReader(instanceName);
 
         ModelDispatcher model = makeModelDispatcher();

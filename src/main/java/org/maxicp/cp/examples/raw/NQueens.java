@@ -13,10 +13,9 @@ import org.maxicp.search.DFSearch;
 import org.maxicp.search.SearchStatistics;
 import static org.maxicp.cp.CPFactory.*;
 
-import java.util.function.Supplier;
+import java.util.Arrays;
 
 import static org.maxicp.search.Searches.EMPTY;
-import static org.maxicp.search.Searches.selectMin;
 
 
 /**
@@ -25,7 +24,7 @@ import static org.maxicp.search.Searches.selectMin;
  */
 public class NQueens {
     public static void main(String[] args) {
-        int n = 14;
+        int n = 8;
 
         CPSolver cp = CPFactory.makeSolver();
         CPIntVar[] q = CPFactory.makeIntVarArray(cp, n, n);
@@ -36,22 +35,23 @@ public class NQueens {
         cp.post(allDifferent(qL));
         cp.post(allDifferent(qR));
 
-        Supplier<Runnable[]> branching = () -> {
-            CPIntVar qs = selectMin(q,
-                    qi -> qi.size() > 1,
-                    qi -> qi.size());
-            if (qs == null)
+        DFSearch search = CPFactory.makeDfs(cp, () -> {
+            int idx = -1; // index of the first variable that is not fixed
+            for (int k = 0; k < q.length; k++)
+                if (q[k].size() > 1) {
+                    idx = k;
+                    break;
+                }
+            if (idx == -1)
                 return EMPTY;
             else {
-                int v = qs.min();
-                Runnable left = () -> cp.post(CPFactory.eq(qs, v));
-                Runnable right = () -> cp.post(CPFactory.neq(qs, v));
+                CPIntVar qi = q[idx];
+                int v = qi.min();
+                Runnable left = () -> cp.post(CPFactory.eq(qi, v));
+                Runnable right = () -> cp.post(CPFactory.neq(qi, v));
                 return new Runnable[]{left, right};
             }
-        };
-
-        DFSearch search = CPFactory.makeDfs(cp, branching);
-        //DFSearchMini search = CPFactory.makeDfsMini(cp, branching);
+        });
 
         // a more compact first fail search using selectors is given next
 /*
@@ -68,18 +68,12 @@ public class NQueens {
         });*/
 
 
-//        search.onSolution(() ->
-//                System.out.println("solution:" + Arrays.toString(q))
-//        );
-        long debut = System.nanoTime();
-        System.out.println("======");
-        SearchStatistics stats = search.solve();
-        System.out.println("======");
-        long fin = System.nanoTime();
-        System.out.print("MaxiCP 14-Queens, raw, firstFail");
-        System.out.format("\nExecution time : %s ms\n", (fin - debut) / 1_000_000);
+        search.onSolution(() ->
+                System.out.println("solution:" + Arrays.toString(q))
+        );
+        SearchStatistics stats = search.solve(statistics -> statistics.numberOfSolutions() == 1000);
 
-        //System.out.format("#Solutions: %s\n", stats.numberOfSolutions());
+        System.out.format("#Solutions: %s\n", stats.numberOfSolutions());
         System.out.format("Statistics: %s\n", stats);
 
     }

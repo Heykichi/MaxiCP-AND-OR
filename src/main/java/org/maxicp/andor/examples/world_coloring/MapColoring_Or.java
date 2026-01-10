@@ -6,7 +6,7 @@ import org.maxicp.ModelDispatcher;
 import org.maxicp.cp.modeling.ConcreteCPModel;
 import org.maxicp.modeling.algebra.integer.IntExpression;
 import org.maxicp.modeling.constraints.AllDifferent;
-import org.maxicp.search.DFSearchMini_Or;
+import org.maxicp.andor.search.DFSearchMini_Or;
 import org.maxicp.search.SearchStatistics;
 import org.maxicp.search.Searches;
 import org.maxicp.util.io.InputReader;
@@ -15,11 +15,21 @@ import java.util.*;
 
 import static org.maxicp.modeling.Factory.makeModelDispatcher;
 
-
+/**
+ * OR implementation of the map coloring problem, which uses constraint programming
+ * to assign colors to regions on a map such that no two adjacent regions have the same color.
+ *
+ * Notes:
+ * - The visual representation of the map can be achieved through external charting tools.
+ * - This implementation uses specific text-based file input and does not include error handling for invalid file formats or contents.
+ */
 public class MapColoring_Or {
     public static void main(String[] args) {
+        // Instances:
+        // "graph_coloring/regions/france"
+        // "graph_coloring/regions/world"
         String path = (args.length >= 1) ? args[0] : "graph_coloring/regions/world";
-        int limite = (args.length >= 2) ? Integer.parseInt(args[1]) : 100000;
+        int limite = (args.length >= 2) ? Integer.parseInt(args[1]) : 1;
 
         InputReader reader1 = new InputReader(path+"/names.txt");
         InputReader reader2 = new InputReader(path+"/neighbors.txt");
@@ -34,8 +44,9 @@ public class MapColoring_Or {
         } catch (RuntimeException e) {}
         List<String> index = new ArrayList<>(names.keySet());
 
+        int nColors = 4;
         ModelDispatcher model = makeModelDispatcher();
-        IntExpression[] vars = model.intVarArray(names.size(), 4);
+        IntExpression[] vars = model.intVarArray(names.size(), nColors);
 
         try {
             while (true) {
@@ -51,17 +62,16 @@ public class MapColoring_Or {
         } catch (RuntimeException e) {}
 
         ConcreteCPModel cp = model.cpInstantiate();
-
         DFSearchMini_Or search = cp.dfSearchMini(Searches.firstFail(vars));
 
-//        search.onSolution(() -> {
-//            for (int k = 0; k < vars.length; k++) {
-//                int n = vars[k].min()+1;
-//                if (vars[k].isFixed()){
-//                    System.out.println(names.get(index.get(k))+ " " + n);
-//                }
-//            }
-//        });
+        search.onSolution(() -> {
+            for (int k = 0; k < vars.length; k++) {
+                int n = vars[k].min()+1;
+                if (vars[k].isFixed()){
+                    System.out.println(names.get(index.get(k))+ " " + n);
+                }
+            }
+        });
 
         // Visual representation
         // https://paintmaps.com/map-charts/293/World-map-chart

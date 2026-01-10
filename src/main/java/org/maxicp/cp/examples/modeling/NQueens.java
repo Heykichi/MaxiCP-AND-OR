@@ -8,18 +8,32 @@ package org.maxicp.cp.examples.modeling;
 
 
 import org.maxicp.ModelDispatcher;
-import org.maxicp.andor.ConstraintGraph;
+import org.maxicp.cp.modeling.CPModelInstantiator;
 import org.maxicp.cp.modeling.ConcreteCPModel;
-
+import org.maxicp.modeling.Factory;
 import static org.maxicp.modeling.Factory.*;
 import org.maxicp.modeling.IntVar;
+import org.maxicp.modeling.Model;
+import org.maxicp.modeling.algebra.bool.Eq;
+import org.maxicp.modeling.algebra.bool.NotEq;
 import org.maxicp.modeling.algebra.integer.IntExpression;
+import org.maxicp.modeling.constraints.AllDifferent;
+import org.maxicp.modeling.symbolic.SymbolicModel;
 import org.maxicp.search.*;
 import static org.maxicp.search.Searches.*;
 
+import org.maxicp.util.TimeIt;
+
+import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 
 import static org.maxicp.search.Searches.EMPTY;
@@ -31,7 +45,7 @@ import static org.maxicp.search.Searches.branch;
  */
 public class NQueens {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        int n = 4;
+        int n = 12;
 
         ModelDispatcher model = makeModelDispatcher();
 
@@ -54,24 +68,14 @@ public class NQueens {
                 return branch(() -> model.add(eq(qs, v)), () -> model.add(neq(qs, v)));
             }
         };
-        System.out.println("======0");
+
         ConcreteCPModel cp = model.cpInstantiate();
-        ConstraintGraph cg = model.createGraph(cp);
-        System.out.println("======1");
-//        DFSearch dfs = cp.dfSearch(branching);
-        DFSearchMini_Or dfs = cp.dfSearchMini(branching);
+        DFSearch dfs = cp.dfSearch(branching);
         dfs.onSolution(() -> {
             System.out.println(Arrays.toString(q));
         });
-
-        long debut = System.nanoTime();
-        System.out.println("======2");
-        SearchStatistics stats = dfs.solve(statistics -> statistics.numberOfSolutions() == 1);
-        //SearchStatistics stats = dfs.solve(statistics -> statistics.numberOfSolutions() == 2);
-        System.out.println("======3");
-        long fin = System.nanoTime();
-        System.out.format("\nExecution time : %s ms\n", (fin - debut) / 1_000_000);
-        System.out.format("Statistics: %s\n", stats);
+        SearchStatistics stats = dfs.solve();
+        System.out.println(stats);
 
     }
 }

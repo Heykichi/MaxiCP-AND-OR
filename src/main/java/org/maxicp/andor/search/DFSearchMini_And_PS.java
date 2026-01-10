@@ -3,13 +3,14 @@
  * Copyright (c)  2023 UCLouvain
  */
 
-package org.maxicp.search;
+package org.maxicp.andor.search;
 
 import org.maxicp.andor.Branch;
 import org.maxicp.andor.ConstraintGraph;
 import org.maxicp.andor.SubBranch;
 import org.maxicp.modeling.ModelProxy;
 import org.maxicp.modeling.algebra.integer.IntExpression;
+import org.maxicp.search.*;
 import org.maxicp.state.StateManager;
 import org.maxicp.util.exception.InconsistencyException;
 
@@ -83,6 +84,14 @@ public class DFSearchMini_And_PS extends RunnableSearchMethod {
         throw new RuntimeException("DFSearch type AND/OR wrong input");
     }
 
+    /**
+     * Start the AND/OR depth-first search (DFS), updating the search statistics
+     * and generating solutions, if applicable.
+     *
+     * @param statistics the object that tracks metrics during the search process.
+     * @param solutionsLimit the maximum number of solutions to find before stoping the search.
+     * @param showSolutions a flag indicating whether to output the solutions during the search.
+     */
     protected void startSolve(SearchStatistics statistics, int solutionsLimit, boolean showSolutions) {
         currNodeId = 0;
         this.showSolutions = showSolutions;
@@ -93,14 +102,27 @@ public class DFSearchMini_And_PS extends RunnableSearchMethod {
         if (!this.complete) throw new StopSearchException();
     }
 
+    /**
+     * Performs an AND/OR depth-first search (DFS) traversal in the search tree, processing AND/OR branches
+     * and updating the search statistics based on the given parameters.
+     *
+     * @param statistics the object that tracks metrics during the search process.
+     * @param parentId the identifier of the parent node in the search tree
+     * @param andLevel the current AND level in the search tree, used to differentiate between levels in an AND/OR structure
+     * @param solutionsLimit the maximum number of solutions to find before halting the search
+     * @return the current number of solutions found during the search.
+     */
     private int dfs(SearchStatistics statistics, int parentId, int andLevel,int solutionsLimit) {
         Objects.requireNonNull(this.branching, "No branching instruction");
         Objects.requireNonNull(this.treeBuilding, "No tree building instruction");
+
+        // Get the next branch to process
         Branch branch = treeBuilding.get();
         if (branch == null) {
             return 1;
         }
 
+        // Following the branch, start its process
         int n_Solutions = 0;
         if (branch.getVariables() != null && !branch.getVariables().isEmpty()) {
             n_Solutions = processOrBranch(branch, statistics, parentId, andLevel, solutionsLimit);
@@ -112,6 +134,17 @@ public class DFSearchMini_And_PS extends RunnableSearchMethod {
         return n_Solutions;
     }
 
+    /**
+     * Processes an AND branch of the search tree by iterating through its subbranches,
+     * applying depth-first search (DFS) strategies, and updating search statistics.
+     *
+     * @param branch the current branch of the search tree to process, containing its variables and subbranches
+     * @param statistics the object that tracks metrics during the search process
+     * @param parentId the identifier of the parent node in the search tree
+     * @param andLevel the current AND level in the search tree, used to differentiate between levels in an AND/OR structure
+     * @param solutionsLimit the maximum number of solutions to find before halting the search
+     * @return the product of solutions found for each subbranch of the current AND branch; returns 0 if any subbranch fails to find a solution.
+     */
     private int processAndBranch(Branch branch, SearchStatistics statistics, int parentId, int andLevel, int solutionsLimit){
         statistics.incrAndNodes();
         final int nodeId = currNodeId++;
@@ -120,12 +153,14 @@ public class DFSearchMini_And_PS extends RunnableSearchMethod {
         final int[] nSolutions = {1};
         int a = 0;
         AtomicReference<Boolean> breaking = new AtomicReference<>(false);
+        // Process each subbranch
         for (SubBranch B : branch.getBranches()) {
             if (this.showSolutions) System.out.println("Depth "+ andLevel +", sub-branch n° " + (a+1) + " \t----------------------");
             a++;
             sm.withNewState(() -> {
                 this.graph.newState(B.getVariables());
                 int solution = 1;
+                // Adjusts the limit of solutions
                 int limit = solutionsLimit;
                 if (solutionsLimit != Integer.MAX_VALUE) {
                     if (nSolutions[0] >= solutionsLimit) {
@@ -135,6 +170,7 @@ public class DFSearchMini_And_PS extends RunnableSearchMethod {
                         limit = (int) Math.ceil((double) solutionsLimit / nSolutions[0]);
                     }
                 }
+                // Recursively process the variables of the subbranch
                 if (B.getToFix()) {
                     solution = processOrBranch(new Branch(B.getVariables()), statistics, nodeId, andLevel+1, limit);
                 } else {
@@ -150,15 +186,28 @@ public class DFSearchMini_And_PS extends RunnableSearchMethod {
         return nSolutions[0];
     }
 
+    /**
+     * Processes an OR branch of the search tree by evaluating its variables and subbranches,
+     * applying the branching strategies, and updating search statistics as solutions are found.
+     *
+     * @param branch the current branch of the search tree to process, containing its variables and subbranches
+     * @param statistics the object that tracks metrics during the search process
+     * @param parentId the identifier of the parent node in the search tree
+     * @param andLevel the current AND level in the search tree, used to differentiate between levels in an AND/OR structure
+     * @param solutionsLimit the maximum number of solutions to find before halting the search
+     * @return the number of solutions found within the current OR branch; 0 if no solutions are found.
+     */
     private int processOrBranch(Branch branch, SearchStatistics statistics, int parentId, int andLevel, int solutionsLimit){
         final int nodeId = currNodeId++;
+        // Get the branching Runnable to reduce a variable domaine
         Runnable[] branches = new Runnable[0];
         if (branch.getVariables() != null){
             branches = this.branching.apply(branch.getVariables());
             notifyBranch(nodeId, parentId);
         }
+        // Check for a solution or an AND branch
         if (branches.length == 0) {
-            this.graph.newState();//TODO check with need new state
+            this.graph.newState();
             if (this.showSolutions) System.out.println();
             if (this.graph.solutionFound()){
                 if (this.showSolutions) notifySolution();
@@ -169,6 +218,7 @@ public class DFSearchMini_And_PS extends RunnableSearchMethod {
                 return processAndBranch(new Branch(branch.getBranches()), statistics, nodeId, andLevel, solutionsLimit);
             }
         } else {
+            // Process the variables of the branch
             final int[] nSolutions = {0};
             for (Runnable b : branches) {
                 if (nSolutions[0] >= solutionsLimit) {
@@ -177,12 +227,15 @@ public class DFSearchMini_And_PS extends RunnableSearchMethod {
                 }
                 sm.withNewState(() -> {
                     try {
+                        // Apply the Runnable
+                        // get the branching Procedure to reduce the variables domaine
                         statistics.incrNodes();
                         b.run();
                         int limite = solutionsLimit;
                         if (solutionsLimit != Integer.MAX_VALUE) {
                             limite = solutionsLimit-nSolutions[0];
                         }
+                        // Continue the recursive search
                         nSolutions[0] += processOrBranch(branch,statistics, nodeId, andLevel, limite);
 
                     } catch (InconsistencyException e) {

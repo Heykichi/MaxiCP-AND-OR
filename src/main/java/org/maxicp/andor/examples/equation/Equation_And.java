@@ -11,7 +11,7 @@ import org.maxicp.ModelDispatcher;
 import org.maxicp.andor.ConstraintGraph;
 import org.maxicp.cp.modeling.ConcreteCPModel;
 import org.maxicp.modeling.algebra.integer.IntExpression;
-import org.maxicp.search.DFSearchMini_And_PS;
+import org.maxicp.andor.search.DFSearchMini_And_CS;
 import org.maxicp.search.SearchStatistics;
 
 import java.util.ArrayList;
@@ -23,14 +23,15 @@ import static org.maxicp.andor.Scheme.*;
 import static org.maxicp.modeling.Factory.*;
 
 /**
- * The N-Queens problem.
- * <a href="http://csplib.org/Problems/prob054/">CSPLib</a>.
+ * Solves a system of sum constraints using constraint programming and AND/OR DFS:
+ *   X1 + ... + Xn = Y
+ *   Z1 + ... + Zn = Y
  */
-public class Equation_And_PS {
+public class Equation_And {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         ModelDispatcher model = makeModelDispatcher();
-        int index = 4;
-        int domain = 4;
+        int index = 4; // number of variables per equation
+        int domain = 4; // maximum value of the variables
         IntExpression[] X = model.intVarArray( index, domain);
         IntExpression[] Z = model.intVarArray( index, domain);
         IntExpression Y = model.intVar(0,domain-1);
@@ -45,20 +46,44 @@ public class Equation_And_PS {
         ConcreteCPModel cp = model.cpInstantiate();
         ConstraintGraph graph = model.createGraph(cp);
 
-        //DFSearchMini_And_PS dfs = cp.dfSearchMini_And_PS(graph, fiducciaMattheyses(graph,5, false), firstFail());
-        DFSearchMini_And_PS dfs = cp.dfSearchMini_And_PS(graph, naiveTreeBuilding(graph,5,1), firstFail());
+        /**
+         * Define the DFSearch model: complete solution (CS) or partial solution (PS)
+         * Define the tree building strategy:
+         *  - fiducciaMattheyses(ConstraintGraph graph, int sizeToFix, boolean splitFirst)
+         *  - naiveTreeBuilding(ConstraintGraph graph, int fixToSplit, int sizeToFix)
+         *      sizeToFix: threshold on the number of variables below which we no longer create AND branch
+         *      splitFirst: try to create an AND branch first
+         *      fixToSplit: number of variables to fix before checking if an AND branch is possible
+         *  Define the branching strategy:
+         *  - firstFail()
+         *  - firstOrder()
+         */
+
+        //DFSearchMini_And_PS dfs = cp.dfSearchMini_And_PS(graph, naiveTreeBuilding(graph,5,1), firstFail());
+        DFSearchMini_And_CS dfs = cp.dfSearchMini_And_CS(graph, naiveTreeBuilding(graph,5,1), firstFail());
+
         dfs.onSolution(() -> {
             printSum(X,Y);
             printSum(Z,Y);
         });
 
         long debut = System.nanoTime();
+        // solve(int solutionsLimit, boolean showSolutions)
         SearchStatistics stats = dfs.solve(100,true);
         long fin = java.lang.System.nanoTime();
 
         java.lang.System.out.format("Execution time : %s ms\n", (fin - debut) / 1_000_000);
         java.lang.System.out.format("Statistics: %s\n", stats);
     }
+
+
+    /**
+     * Prints the sum of an array of {@code IntExpression} and a {@code IntExpression}
+     * in the format `var1 + var2 + ... + varN = sum`.
+     *
+     * @param vars an array of {@code IntExpression}
+     * @param sum  an {@code IntExpression} element representing the result of the sum.
+     */
     public static void printSum(IntExpression[] vars, IntExpression sum){
         StringBuilder expression = new StringBuilder();
         for (int i = 0; i < vars.length -1; i += 1) {

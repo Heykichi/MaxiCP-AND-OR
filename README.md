@@ -4,6 +4,26 @@
 ![Userguide](https://github.com/aia-uclouvain/maxicp/actions/workflows/userguide.yml/badge.svg)
 ![Coverage](https://raw.githubusercontent.com/aia-uclouvain/maxicp/refs/heads/gh-pages/badges/coverbadge.svg)
 
+## AND/OR Implementation of MaxiCP
+
+- **AND/OR Implementation**:
+    - Located in: [`org.maxicp.andor`](https://github.com/aia-uclouvain/maxicp/tree/main/src/main/java/org/maxicp/cp/examples/raw)
+
+- **AND/OR Search Implementation**:
+    - Located in: [`org.maxicp.andor.search`](https://github.com/aia-uclouvain/maxicp/tree/main/src/main/java/org/maxicp/cp/examples/raw)
+
+- **AND/OR Implementation Examples**:
+    - Located in: [`org.maxicp.andor.examples`](https://github.com/aia-uclouvain/maxicp/tree/main/src/main/java/org/maxicp/cp/examples/raw)
+    - These examples demonstrate how to use MiniCP with the AND/OR search strategy.
+
+- **Graph Coloring Examples**:
+    - Located in: [`org.maxicp.modeling.gc_dimacs`](https://github.com/aia-uclouvain/maxicp/tree/main/src/main/java/org/maxicp/cp/examples/raw)
+
+- **XCSP3 Examples**:
+    - Located in: [`org.maxicp.modeling.xcsp3`](https://github.com/aia-uclouvain/maxicp/tree/main/src/main/java/org/maxicp/cp/examples/raw)
+
+## MaxiCP
+
 **MaxiCP** is an open-source (MIT licence) Java-based Constraint Programming (CP) solver
 for solving scheduling and vehicle routing problems.
 

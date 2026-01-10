@@ -7,7 +7,10 @@ package org.maxicp.modeling.concrete;
 
 import org.maxicp.andor.Branch;
 import org.maxicp.andor.ConstraintGraph;
-import org.maxicp.cp.engine.core.CPIntVar;
+import org.maxicp.andor.Scheme;
+import org.maxicp.andor.search.DFSearchMini_And_CS;
+import org.maxicp.andor.search.DFSearchMini_And_PS;
+import org.maxicp.andor.search.DFSearchMini_Or;
 import org.maxicp.modeling.Constraint;
 import org.maxicp.modeling.Model;
 import org.maxicp.modeling.algebra.bool.BoolExpression;
@@ -66,18 +69,36 @@ public interface ConcreteModel extends Model, StateManaged {
         return new DFSearch(getStateManager(), branching);
     }
 
-    default DFSearchAndPS dfSearchAndPS(Supplier<Branch> treeBuilding, Function<Set<CPIntVar>, Runnable[]> branchingA, Supplier<Runnable[]> branching){
-        return new DFSearchAndPS(getStateManager(), treeBuilding, branchingA, branching);
-    }
-
     default DFSearchMini_Or dfSearchMini(Supplier<Runnable[]> branching) {
         return new DFSearchMini_Or(getStateManager(), branching);
     }
 
+    /**
+     * Creates and returns an instance of DFSearch_And_PS, an AND/OR DFS search with partial solutions,
+     * by configuring the solver with a tree building strategy and a branching procedure.
+     *
+     * @param graph the constraint graph representing the problem's variables and constraints
+     * @param treeBuilding a supplier that provides a branching tree structure for the search process
+     * @param branching a function that generate an array of {@link Runnable} that will be used to commit to child nodes
+     * @return a new instance of DFSearch_And_PS initialized with the provided solver and branching.
+     *
+     * @see Scheme
+     */
     default DFSearchMini_And_PS dfSearchMini_And_PS(ConstraintGraph graph, Supplier<Branch> treeBuilding, Function<Set<IntExpression>, Runnable[]> branching) {
         return new DFSearchMini_And_PS(getStateManager(), graph, treeBuilding, branching);
     }
 
+    /**
+     * Creates and returns an instance of DFSearch_And_CS, an AND/OR DFS search with complete solutions,
+     * by configuring the solver with a tree building strategy and a branching procedure.
+     *
+     * @param graph the constraint graph representing the problem's variables and constraints
+     * @param treeBuilding a supplier that provides a branching tree structure for the search process
+     * @param branching a function that generate an array of {@link Runnable} that will be used to commit to child nodes
+     * @return a new instance of DFSearch_And_CS initialized with the provided solver, tree-building strategy, and branching.
+     *
+     * @see Scheme
+     */
     default DFSearchMini_And_CS dfSearchMini_And_CS(ConstraintGraph graph, Supplier<Branch> treeBuilding, Function<Set<IntExpression>, Runnable[]> branching) {
         return new DFSearchMini_And_CS(getStateManager(), graph, treeBuilding, branching);
     }

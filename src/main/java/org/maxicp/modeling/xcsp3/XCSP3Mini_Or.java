@@ -6,7 +6,7 @@ import org.maxicp.modeling.algebra.VariableNotFixedException;
 import org.maxicp.modeling.algebra.bool.*;
 import org.maxicp.modeling.algebra.integer.*;
 import org.maxicp.modeling.constraints.*;
-import org.maxicp.search.DFSearchMini_Or;
+import org.maxicp.andor.search.DFSearchMini_Or;
 import org.maxicp.search.SearchStatistics;
 import org.maxicp.util.ImmutableSet;
 import org.maxicp.util.exception.NotImplementedException;

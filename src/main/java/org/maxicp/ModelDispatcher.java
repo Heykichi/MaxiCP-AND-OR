@@ -222,6 +222,15 @@ public class ModelDispatcher implements ModelProxyInstantiator, AutoCloseable, M
         return new BestFirstSearch<U>(this, branching, nodeEvaluator);
     }
 
+    /**
+     * Creates a constraint graph for the given concrete constraint programming model.
+     * The method initializes the graph if it is not already created, adds nodes
+     * representing preloaded integer expressions, and creates edges between constrained
+     * nodes based on the model's active constraints.
+     *
+     * @param cp the concrete constraint programming model used to create the graph
+     * @return the constructed ConstraintGraph instance
+     */
     public ConstraintGraph createGraph(ConcreteCPModel cp) {
         if (graph == null) graph = new ConstraintGraph(cp.getStateManager());
         graph.addNode(preload.toArray(new IntExpression[0]));
@@ -242,11 +251,25 @@ public class ModelDispatcher implements ModelProxyInstantiator, AutoCloseable, M
         return graph;
     }
 
+    /**
+     * Recursively expands the given expression and adds all constrained integer expressions
+     * to the provided list. If the expression contains sub-expressions, it processes each
+     * sub-expression recursively.
+     *
+     * @param constrainedNodes the list to which constrained IntExpression nodes are added
+     * @param exp the expression to expand, which may contain sub-expressions
+     */
     private void expandExpression(List<IntExpression> constrainedNodes, Expression exp) {
         Expression[] exps = exp.subexpressions().toArray(new Expression[0]);
         if (exps.length == 0) constrainedNodes.add((IntExpression) exp);
         else for (Expression e : exps) expandExpression(constrainedNodes, e);
     }
+
+    /**
+     * Retrieves the next unique identifier for the current instance of the solver.
+     *
+     * @return the incremented unique identifier for the solver instance.
+     */
     @Override
     public int getId() {
         id ++;

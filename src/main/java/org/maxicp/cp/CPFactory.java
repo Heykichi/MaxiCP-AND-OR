@@ -17,7 +17,7 @@ import org.maxicp.cp.engine.constraints.seqvar.Require;
 import org.maxicp.cp.engine.core.*;
 import org.maxicp.cp.engine.constraints.scheduling.Activity;
 import org.maxicp.search.DFSearch;
-import org.maxicp.search.DFSearchMini_Or;
+import org.maxicp.andor.search.DFSearchMini_Or;
 import org.maxicp.search.Objective;
 import org.maxicp.state.copy.Copier;
 import org.maxicp.state.trail.Trailer;
